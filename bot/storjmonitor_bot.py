@@ -284,7 +284,7 @@ def message_other(message):
         nodes_col.insert_one(
             {'name': infouser_db['lastMessage']['text'], "address": message.text, "idUser": infouser_db['_id'],
              "notifications": False,
-             "check": {"port": 123456, "last": datetime.utcnow(), "last_ok": datetime.utcnow(), "error": 0,
+             "check": {"port": 28967, "last": datetime.utcnow(), "last_ok": datetime.utcnow(), "error": 0,
                        "send_error": False}})
 
         users_col.update_one({"_id": str(infouser_db['_id'])},
