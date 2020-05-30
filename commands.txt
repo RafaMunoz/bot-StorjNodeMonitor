@@ -1,0 +1,9 @@
+newnode - Create a new node
+mynodes - See all your nodes
+setname - Change a node's name
+setaddress - Change a node's address
+deletenode - Delete a node
+seestats - View Stats
+enablenotification - Enable node status
+disablenotification - Disable node status notifications
+contact - Send a message to the bot administrator
