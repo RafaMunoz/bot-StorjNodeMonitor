@@ -71,10 +71,10 @@ def pretty_date(time_obj):
     if day_diff < 7:
         return "{0} days ago".format(day_diff)
     if day_diff < 31:
-        return "{0} weeks ago".format(day_diff / 7)
+        return "{0} weeks ago".format(int(day_diff / 7))
     if day_diff < 365:
-        return "{0} months ago".format(day_diff / 30)
-    return " years ago".format(day_diff / 365)
+        return "{0} months ago".format(int(day_diff / 30))
+    return " years ago".format(int(day_diff / 365))
 
 
 # Return string with the statistics month and today
