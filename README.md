@@ -4,7 +4,7 @@ If you have a [Storj Node](https://storj.io/storage-node-operator), You can impl
 The statistics that you can see are the same as in the Dashboard of your Storj Node. From this bot you will be able to consult the statistics of all your Storj nodes, there is no need for a bot for each node.
 
 
-You can try the bot [here](t.me/storjnodemonitor_bot).
+You can try the bot [here](https://t.me/storjnodemonitor_bot).
 
 But they can also implement within your infrastructure very easily, below you have a guide.
 
