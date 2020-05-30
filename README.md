@@ -1,4 +1,4 @@
-﻿# Telegram Bot - Storj Node Monitor
+# Telegram Bot - Storj Node Monitor
 
 If you have a [Storj Node](https://storj.io/storage-node-operator), You can implement this telegram bot to check all the statistics of your node and you can also receive notifications in case your node goes down.
 The statistics that you can see are the same as in the Dashboard of your Storj Node. From this bot you will be able to consult the statistics of all your Storj nodes, there is no need for a bot for each node.
