@@ -39,6 +39,6 @@ Once this is done, you can now speak with your bot from the Telegram APP.
 
 ## Donations
 
-**ETH**: 0xF47FB0A777881545ED7b97B289961e78e97Aa760
+**ETH**: 0x62B128e40FDC786BC3Ae948d08b8783be7d3a199
 
 
