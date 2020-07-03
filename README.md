@@ -28,7 +28,7 @@ Below you can see the Environment variables necessary for the operation of this 
 
 To run this bot using Docker you can use the following command:
 
-    docker run -d \
+    docker run -d --name bot-storjnodemonitor\
     -e "TELEGRAM_TOKEN=YOUR-TELEGRAM-TOKEN" \
     -e "URI_MONGODB=YOUR_URI_CONNECT_MONGODB"
     rafa93m/bot-storjnodemonitor
