@@ -412,7 +412,7 @@ def callback_query(call):
         if notifications:
             text_notification = "Enabled"
 
-        message_text = "Here it is:\n\n- *Node*: `{0}`\n- *Address*: `{1}`\n- *Notifications*: {2}\n\nWhat do you"\
+        message_text = "Here it is:\n\n- *Node*: `{0}`\n- *Address*: `{1}`\n- *Notifications*: {2}\n\nWhat do you" \
                        " want to do with this node?".format(node_name, node_code, text_notification)
 
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=message_text,
@@ -540,7 +540,8 @@ def callback_query(call):
             last_pinged = convertDate(req["lastPinged"])
             disk_available = req["diskSpace"]["available"]
             disk_used = req["diskSpace"]["used"]
-            disk_remaning = convertSize(disk_available - disk_used)
+            disk_trash = req["diskSpace"]["trash"]
+            disk_free = disk_available - disk_used - disk_trash
             now = datetime.utcnow()
             str_last_pinged = pretty_date(now - last_pinged)
             str_uptime = pretty_date(now - started_at)
@@ -556,8 +557,10 @@ def callback_query(call):
             else:
                 color_status = "🔴"
 
-            message_text = "*--- Node Info ---*\n\n_Status:_ {3}\n_Uptime:_ {0}\n_Last Contact:_ {1}\n_Disk Space " \
-                           "Remaining:_ {2}".format(str_uptime, str_last_pinged, disk_remaning, color_status)
+            message_text = "*--- Node Info ---*\n\n_Status:_ {2}\n_Uptime:_ {0}\n_Last Contact:_ {1}\n\n" \
+                           "*Total Disk Space {3}*\n_Used:_ {4}\n_Free:_ {5}\n_Trash:_ " \
+                           "{6}".format(str_uptime, str_last_pinged, color_status, convertSize(disk_available),
+                                        convertSize(disk_used), convertSize(disk_free), convertSize(disk_trash))
             print("Send information Node Info to user: {0}".format(infouser_db['_id']))
 
         except Exception as c:
@@ -608,6 +611,52 @@ def callback_query(call):
         except Exception as c:
             print(c)
 
+    # Callback Uptime & Audits
+    elif re.search("^uptimeaudits-+", call.data):
+        node_code = str(call.data).replace('uptimeaudits-', '')
+        message_text = ""
+        warning = ""
+
+        try:
+            # Get all satellites
+            req = requestAPI("{0}/api/sno/".format(node_code))
+
+            for satellite in req["satellites"]:
+                satellite_id = satellite["id"]
+                satellite_name = satellite["url"]
+
+                if satellite["disqualified"] is not None:
+                    warning = "\n\n⚠ Satellite disqualified node.\n"
+                if satellite["suspended"] is not None:
+                    warning = "\n\n⚠ Satellite suspended node.\n"
+
+                # Get statistics satellite
+                req2 = requestAPI("{0}/api/sno/satellite/{1}".format(node_code, satellite_id))
+
+                # Get percentage
+                uptime_total_count = req2["uptime"]["totalCount"]
+                uptime_success_count = req2["uptime"]["successCount"]
+                uptime_checks = percentage(uptime_success_count, uptime_total_count)
+
+                audit_total_count = req2["audit"]["totalCount"]
+                audit_success_count = req2["audit"]["successCount"]
+                audit_checks = percentage(audit_success_count, audit_total_count)
+
+                message_text = message_text + "🛰️ *{0}*\n_Uptime Checks_: *{1}%*\n_Audit Checks_: *{2}%*\n" \
+                                              "{3}\n".format(satellite_name, uptime_checks, audit_checks, warning)
+
+            print("Send info uptime and audit to user {0} node {1}".format(infouser_db['_id'], node_code))
+
+        except Exception as c:
+            print(c)
+            message_text = "*--- Other Info ---*\n\n🔴 An error occurred while getting the information, try again " \
+                           "later or check your node. "
+
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=message_text,
+                              parse_mode='Markdown')
+        bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                      reply_markup=keyboardReturnCustom("utilization-", node_code))
+
     # Callback one satellite
     elif re.search("^sat-+", call.data):
         clean = str(call.data).replace('sat-', '')
@@ -628,7 +677,7 @@ def callback_query(call):
             if req["satellites"][int(n_stellite)]["suspended"] is not None:
                 warning = "\n\n⚠ {0}\n".format(req["satellites"][int(n_stellite)]["suspended"])
 
-            # Get statuistics satellite
+            # Get statistics satellite
             print("Get info satellite {0}/api/sno/satellite/{1} to user: {2}".format(node_code, satellite_id,
                                                                                      infouser_db['_id']))
             req2 = requestAPI("{0}/api/sno/satellite/{1}".format(node_code, satellite_id))
@@ -644,15 +693,18 @@ def callback_query(call):
 
             print("Send info satellite {0} to user {1} node {2}".format(satellite_id, infouser_db['_id'], node_code))
 
-            message_text = "*--- {0} ---*\n\n_Uptime Checks_: *{1}%*\n_Audit Checks_: *{2}%*\n\n{3}{4}".format(
+            message_text = "🛰️ *{0}*\n\n_Uptime Checks_: *{1}%*\n_Audit Checks_: *{2}%*\n\n{3}{4}".format(
                 req["satellites"][int(n_stellite)]["url"], uptime_checks, audit_checks, statsString(req2), warning)
-            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=message_text,
-                                  parse_mode='Markdown')
-            bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                          reply_markup=KeyboardOtherSatellite(node_code))
 
         except Exception as c:
             print(c)
+            message_text = "*--- Other Info ---*\n\n🔴 An error occurred while getting the information, try again " \
+                           "later or check your node. "
+
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=message_text,
+                              parse_mode='Markdown')
+        bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                      reply_markup=KeyboardOtherSatellite(node_code))
 
     # Callback otherinfo
     elif re.search("^otherinf-+", call.data):
