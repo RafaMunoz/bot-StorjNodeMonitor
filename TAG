@@ -1,1 +1,1 @@
-bot-storjnodemonitor_v1.0-beta
+rafa93m/bot-storjnodemonitor:v1
