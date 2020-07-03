@@ -33,7 +33,6 @@ To run this bot using Docker you can use the following command:
     -e "URI_MONGODB=YOUR_URI_CONNECT_MONGODB"
     rafa93m/bot-storjnodemonitor
 
-To use it on an ARM architecture like a Raspberry Pi you can use the image: `rafa93m/bot-storjnodemonitor:arm`
 
 Once this is done, you can now speak with your bot from the Telegram APP.
 
