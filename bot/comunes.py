@@ -127,3 +127,10 @@ def convertDate(date_string):
     date_split = date_string.split(".")
     date = "{0}.{1}Z".format(date_split[0], (date_split[1])[:6])
     return datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%fZ")
+
+# Clean string
+def cleanString(text):
+    text = text.lower()
+    text = text.replace(" ","")
+    text = re.sub("(http:|https:|/)", "", text)
+    return text
