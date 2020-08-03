@@ -280,9 +280,11 @@ def message_other(message):
 
     # Insert address for new node
     elif infouser_db['lastMessage']['type'] == 'newnodeaddr':
+        
+        address_node = cleanString(message.text)
 
         nodes_col.insert_one(
-            {'name': infouser_db['lastMessage']['text'], "address": message.text, "idUser": infouser_db['_id'],
+            {'name': infouser_db['lastMessage']['text'], "address": address_node, "idUser": infouser_db['_id'],
              "notifications": False,
              "check": {"port": 28967, "last": datetime.utcnow(), "last_ok": datetime.utcnow(), "error": 0,
                        "send_error": False}})
@@ -291,11 +293,11 @@ def message_other(message):
                              {"$set": {"lastMessage.type": "", "lastMessage.idMessage": "", "lastMessage.text": ""}})
         print('Insert new node -> idUser: {0}, nameNode: {1}, address: {2}'.format(infouser_db['_id'],
                                                                                    infouser_db['lastMessage']['text'],
-                                                                                   message.text))
+                                                                                   address_node))
 
         message_new_node = "Done! Congratulations for your new node.\n\nNow you can start checking your statistics, " \
                            "run the /seestats command and choose your node.\n\nName: `{0}`\n" \
-                           "Address: `{1}`".format(infouser_db['lastMessage']['text'], message.text)
+                           "Address: `{1}`".format(infouser_db['lastMessage']['text'], address_node)
         bot.send_message(chat_id=infouser_db['_id'], text=message_new_node, parse_mode='Markdown',
                          reply_markup=keyboardReturnMyNodes())
 
