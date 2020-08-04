@@ -146,7 +146,7 @@ def keyboardNodeInfoSatellites(node_code):
     markup.add(
         InlineKeyboardButton("« Return", callback_data="stats-" + node_code),
         InlineKeyboardButton("Satellites", callback_data="satellites-" + node_code))
-
+        InlineKeyboardButton("Uptime & Audits", callback_data="uptimeaudits-" + node_code))
     return markup
 
 
