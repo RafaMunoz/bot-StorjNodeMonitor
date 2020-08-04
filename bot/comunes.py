@@ -2,6 +2,7 @@ import urllib3
 import json
 import sys
 import os
+import re
 import math
 from datetime import datetime
 
