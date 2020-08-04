@@ -142,7 +142,7 @@ def keyboardReturnCustom(prefix, node_code):
 # Keyboard return to node info o satellites
 def keyboardNodeInfoSatellites(node_code):
     markup = InlineKeyboardMarkup()
-    markup.row_width = 2
+    markup.row_width = 3
     markup.add(
         InlineKeyboardButton("« Return", callback_data="stats-" + node_code),
         InlineKeyboardButton("Satellites", callback_data="satellites-" + node_code),
