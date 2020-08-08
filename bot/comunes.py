@@ -8,7 +8,9 @@ from datetime import datetime
 
 # Objeto HTTP
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-http = urllib3.PoolManager()
+timeout = urllib3.Timeout(connect=2, read=5)
+retries = urllib3.Retry(connect=1, read=1, redirect=1)
+http = urllib3.PoolManager(timeout=timeout, retries=retries)
 
 
 # Check environment variable
