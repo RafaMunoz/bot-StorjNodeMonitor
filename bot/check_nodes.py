@@ -69,7 +69,7 @@ for node in nodes:
         if errors >= 3 and not node["check"]["send_error"]:
             try:
                 message_text = "⚠ *Node Down*\n\nWe have detected that your node *{0}* has been offline since" \
-                               " {1}.\nPlease check it!\n\n- Address: `{2}`\n- Port: " \
+                               " {1} UTC+0.\nPlease check it!\n\n- Address: `{2}`\n- Port: " \
                                "`{3}`".format(node["name"], datetime.strftime(node["check"]["last_ok"], "%Y-%m-%d "
                                                                                                         "%H:%M:%S"),
                                               addr, port)
