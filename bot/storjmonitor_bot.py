@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import re
 import pymongo
 import telebot
 from comunes import *
@@ -9,7 +8,7 @@ from keyboards import *
 
 
 # Function user information
-def infoUser(message, tp="message"):
+def infouser(message, tp="message"):
     id_user = message.from_user.id
     name = message.from_user.first_name
     last_name = message.from_user.last_name
@@ -41,13 +40,13 @@ def infoUser(message, tp="message"):
     else:
         print("New Message -> id_user: {0}, username: {1}, message: {2}".format(id_user, username, text))
 
-    updateLastaccess(id_user)
+    updatelastaccess(id_user)
 
     return user_document
 
 
 # Check if the user exist in db
-def checkUser(userdoc):
+def checkuser(userdoc):
     try:
         userdoc_db = users_col.find_one({"_id": userdoc['_id']})
         if userdoc_db is None:
@@ -63,7 +62,7 @@ def checkUser(userdoc):
 
 
 # Update last access
-def updateLastaccess(id_user):
+def updatelastaccess(id_user):
     try:
         users_col.update_one({"_id": str(id_user)}, {"$set": {"lastAccess": datetime.utcnow()}})
     except Exception as b:
@@ -104,14 +103,14 @@ main_message = "I can help you check the statistics of your *Storj Nodes* and se
 # Command /start create new user if not exists and send message
 @bot.message_handler(commands=['start'])
 def command_start(message):
-    checkUser(infoUser(message))
+    checkuser(infouser(message))
     bot.send_message(message.chat.id, main_message, parse_mode="Markdown")
 
 
 # Message for command /mynodes
 @bot.message_handler(commands=['mynodes'])
 def message_myaddrs(message):
-    infouser_db = checkUser(infoUser(message))
+    infouser_db = checkuser(infouser(message))
     print("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
     print("Send keyboard myNodes to user: {0}".format(infouser_db['_id']))
@@ -130,7 +129,7 @@ def message_myaddrs(message):
 # Message for command /newnode
 @bot.message_handler(commands=['newnode'])
 def message_newnode(message):
-    infouser_db = checkUser(infoUser(message))
+    infouser_db = checkuser(infouser(message))
     response = bot.send_message(chat_id=infouser_db['_id'],
                                 text="Alright, a new node. How are we going to call it? Please choose a name for your "
                                      "node.",
@@ -142,7 +141,7 @@ def message_newnode(message):
 # Message for command /setname
 @bot.message_handler(commands=['setname'])
 def message_setname(message):
-    infouser_db = checkUser(infoUser(message))
+    infouser_db = checkuser(infouser(message))
     print("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
 
@@ -160,7 +159,7 @@ def message_setname(message):
 # Message for command /setaddress
 @bot.message_handler(commands=['setaddress'])
 def message_setaddr(message):
-    infouser_db = checkUser(infoUser(message))
+    infouser_db = checkuser(infouser(message))
     print("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
 
@@ -178,7 +177,7 @@ def message_setaddr(message):
 # Message for command /deleteaddr
 @bot.message_handler(commands=['deletenode'])
 def message_deleteaddr(message):
-    infouser_db = checkUser(infoUser(message))
+    infouser_db = checkuser(infouser(message))
     print("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
 
@@ -196,7 +195,7 @@ def message_deleteaddr(message):
 # Message for command /enablenotification
 @bot.message_handler(commands=['enablenotification'])
 def message_enablenotification(message):
-    infouser_db = checkUser(infoUser(message))
+    infouser_db = checkuser(infouser(message))
     print("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
 
@@ -215,7 +214,7 @@ def message_enablenotification(message):
 # Message for command /disablenotification
 @bot.message_handler(commands=['disablenotification'])
 def message_disablenotification(message):
-    infouser_db = checkUser(infoUser(message))
+    infouser_db = checkuser(infouser(message))
     print("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
 
@@ -233,7 +232,7 @@ def message_disablenotification(message):
 # Message for command /seestats
 @bot.message_handler(commands=['seestats'])
 def message_seestats(message):
-    infouser_db = checkUser(infoUser(message))
+    infouser_db = checkuser(infouser(message))
     print("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
 
@@ -252,7 +251,7 @@ def message_seestats(message):
 # Envia teclado inline al mandar comando /contactar
 @bot.message_handler(commands=['contact'])
 def message_contact(message):
-    infouser_db = checkUser(infoUser(message))
+    infouser_db = checkuser(infouser(message))
     users_col.update_one({"_id": str(infouser_db['_id'])}, {"$set": {"contact": True}}, upsert=True)
 
     mensaje = "Please write your message to contact:"
@@ -262,7 +261,7 @@ def message_contact(message):
 # Proccess message text
 @bot.message_handler(func=lambda message: True)
 def message_other(message):
-    infouser_db = checkUser(infoUser(message))
+    infouser_db = checkuser(infouser(message))
 
     # Insert name for new node
     if infouser_db['lastMessage']['type'] == 'newnode':
@@ -369,6 +368,40 @@ def message_other(message):
                          reply_markup=keyboardReturnCustom(prefix="notNode-",
                                                            node_code=infouser_db['lastMessage']['text']))
 
+    # Edit downtime notifications
+    elif infouser_db['lastMessage']['type'] == 'changedowntime':
+
+        try:
+            downtime = int(message.text)
+
+            if downtime == 0:
+                downtime = 3
+
+            nodes_col.update_one({"idUser": str(infouser_db['_id']), "address": infouser_db['lastMessage']['text']},
+                                 {"$set": {"check.downtime": downtime}})
+
+            users_col.update_one({"_id": str(infouser_db['_id'])},
+                                 {"$set": {"lastMessage.type": "", "lastMessage.idMessage": "",
+                                           "lastMessage.text": ""}})
+
+            split_addr = infouser_db['lastMessage']['text'].split(":")
+
+            print("Update downtime. user: {0} node: {1} downtime: {2}".format(infouser_db['_id'], split_addr[0],
+                                                                              downtime))
+
+            message_text = "The downtime has been changed. Now we will send the notification:\n- Address: {0}\n- " \
+                           "Downtime: {1} minutes".format(split_addr[0], downtime)
+
+        except Exception as d:
+            print(d)
+            message_text = "🔴 An error occurred while updating the information. Check that the downtime is only made " \
+                           "up of numbers or try again later. If you send a 0 downtime, the default value of 3 " \
+                           "minutes will be set."
+
+        bot.send_message(chat_id=infouser_db['_id'], text=message_text, parse_mode='Markdown',
+                         reply_markup=keyboardReturnCustom(prefix="notNode-",
+                                                           node_code=infouser_db['lastMessage']['text']))
+
     # Check if message if for contact
     elif infouser_db['contact']:
         users_col.update_one({"_id": str(infouser_db['_id'])}, {"$set": {"contact": False}}, upsert=True)
@@ -398,7 +431,7 @@ def message_other(message):
 # Callback from inlinekeyboards
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
-    infouser_db = checkUser(infoUser(call, tp="callback"))
+    infouser_db = checkuser(infouser(call, tp="callback"))
 
     # Send keyboard options node
     if re.search("^mynode-+", call.data):
@@ -501,7 +534,7 @@ def callback_query(call):
                               text="Activating the notification service will receive a message every time there "
                                    "is a change of status in your *Node*.\n\nBy default we check port `28967` every  "
                                    "minute and we will notify if three failed checks occur. You can change it from "
-                                   "the *Change Port* button.", parse_mode='Markdown')
+                                   "the *Change Port* and *Change Downtime* buttons.", parse_mode='Markdown')
         bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                       reply_markup=keyboardNotifications(node_code))
 
@@ -803,6 +836,20 @@ def callback_query(call):
 
         message_text = "OK, send the new Storj Port of your node to be able to check it. The entire address is not" \
                        " necessary, only the port."
+
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                              text=message_text, parse_mode='Markdown')
+
+    # Callback changedowntime
+    elif re.search("^changedowntime-+", call.data):
+        node_code = str(call.data).replace('changedowntime-', '')
+
+        users_col.update_one({"_id": str(infouser_db['_id'])}, {
+            "$set": {"lastMessage.type": "changedowntime", "lastMessage.idMessage": str(call.message.message_id),
+                     "lastMessage.text": node_code}})
+
+        message_text = "Ok, send the idle time that has to pass before sending the notification that the Storj node " \
+                       "is unavailable."
 
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                               text=message_text, parse_mode='Markdown')

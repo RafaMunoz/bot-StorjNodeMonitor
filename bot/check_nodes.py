@@ -32,6 +32,12 @@ for node in nodes:
     id_user = node["idUser"]
     datenow = datetime.utcnow()
 
+    # Check if personalized downtime
+    if "downtime" in node["check"]:
+        downtime = int(node["check"]["downtime"])
+    else:
+        downtime = 3
+
     # Check the port
     try:
         a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -65,8 +71,8 @@ for node in nodes:
         errors = node["check"]["error"] + 1
         print("CLOSE Port {0}:{1} user: {2} errors: {3}".format(addr, port, id_user, errors))
 
-        # If errors 3 notification user send notification
-        if errors >= 3 and not node["check"]["send_error"]:
+        # If errors >= downtime send user notification
+        if errors >= downtime and not node["check"]["send_error"]:
             try:
                 message_text = "⚠ *Node Down*\n\nWe have detected that your node *{0}* has been offline since" \
                                " {1} UTC+0.\nPlease check it!\n\n- Address: `{2}`\n- Port: " \

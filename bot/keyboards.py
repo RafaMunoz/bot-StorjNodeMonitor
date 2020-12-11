@@ -110,7 +110,8 @@ def keyboardNotifications(node_code):
     markup.add(
         InlineKeyboardButton("ON", callback_data="notON-" + node_code),
         InlineKeyboardButton("OFF", callback_data="notOFF-" + node_code),
-        InlineKeyboardButton("Change Port", callback_data="changeport-" + node_code)
+        InlineKeyboardButton("Change Port", callback_data="changeport-" + node_code),
+        InlineKeyboardButton("Change Downtime", callback_data="changedowntime-" + node_code)
     )
 
     return markup
