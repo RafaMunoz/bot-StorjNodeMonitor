@@ -782,25 +782,26 @@ def callback_query(call):
             prices = {"download": 20, "repair_audit": 10, "disk": 1.5}
             req = requestAPI("{0}/api/sno/satellites".format(node_code))
 
-            # Calculate payout for egress Download
-            e_download = convertSize(req["egressSummary"])
-            payout_e_download = payments(req["egressSummary"], prices["download"], 1e12)
-
-            # Calculate payout for Repair & Audit Egress
+            # Calculate payout for egress Download, Repair & Audit Egress
             repair_audit_egress = 0
+            download = 0
             for day in req["bandwidthDaily"]:
                 repair_audit_egress = repair_audit_egress + day["egress"]["repair"] + day["egress"]["audit"]
+                download = download + day["egress"]["usage"]
 
             e_repair_audit = convertSize(repair_audit_egress)
             payout_e_repair_audit = payments(repair_audit_egress, prices["repair_audit"], 1e12)
 
+            e_download = convertSize(download)
+            payout_e_download = payments(download, prices["download"], 1e12)
+
             # Calculate payout for disk average
             disk_average = convertSize(req["storageSummary"])
-            payout_disk_average = payments(req["storageSummary"], prices["disk"], 1e12) / 730
+            payout_disk_average = payments(req["storageSummary"], prices["disk"], 1e12) / 720
 
             # Calculate totals
-            total_disk = convertSize(req["storageSummary"])
-            total_bw = convertSize(req["egressSummary"] + repair_audit_egress)
+            total_disk = convertSize(req["storageSummary"]/720)
+            total_bw = convertSize(download + repair_audit_egress)
             total_payouts = round(payout_e_download + payout_e_repair_audit + payout_disk_average, 2)
 
             m_text = "* --- Payout Estimation ---*\n\n*Download*\n• _Type:_ Engress\n• _Price:_ ${0}/TB" \

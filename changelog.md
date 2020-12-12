@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.1] - 2020-12-13
+### Fixed
+- Fix errors in payment statistics
+- Fix start command for crond
+
 ## [1.4.0] - 2020-12-12
 ### Added
 - Added ability to edit the downtime before sending notification.

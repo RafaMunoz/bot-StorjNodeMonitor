@@ -11,6 +11,6 @@ if [[ -z $URI_MONGODB ]]; then
 	exit 1
 fi
 
-/usr/sbin/crond -b -L 9
+/usr/sbin/crond -b -l 9
 
 exec "$@"
