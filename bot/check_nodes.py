@@ -5,12 +5,19 @@ import socket
 import pymongo
 import telebot
 from comunes import *
+from logrm import LogRM
 
 print("------ Start Check Nodes ------")
 
 # Settings
 telegram_token = checkEnviron("TELEGRAM_TOKEN")
 mongoconnection = checkEnviron("URI_MONGODB")
+
+# Log
+l = LogRM()
+l.idlog = "{0}-{1}".format(l.idlog, "check")
+l.init()
+log = l.logger
 
 # Bot telegram
 bot = telebot.TeleBot(telegram_token)
@@ -46,7 +53,8 @@ for node in nodes:
         result_of_check = a_socket.connect_ex(location)
         a_socket.close()
     except Exception as f:
-        print(f)
+        log.error(location)
+        log.error(f)
         continue
 
     # If the node returns to be active we send notification
@@ -55,21 +63,21 @@ for node in nodes:
                              {"$set": {"check.last": datenow, "check.last_ok": datenow, "check.error": 0,
                                        "check.send_error": False}})
 
-        print("Port is open {0}:{1} user {2}".format(addr, port, id_user))
+        log.debug("Port is open {0}:{1} user {2}".format(addr, port, id_user))
 
         if node["check"]["send_error"]:
             message_text = "🟢 *Node UP* \n\nWe have detected that your node {0} is now *Online*!" \
                            "\n\n- Address: `{1}`\n- Port: " \
                            "`{2}`".format(node["name"], addr, port)
 
-            print("NODE UP for user: {0} node down {1}:{2} last_ok: "
+            log.debug("NODE UP for user: {0} node down {1}:{2} last_ok: "
                   "{3}".format(id_user, addr, port, node["check"]["last_ok"]))
 
             bot.send_message(chat_id=int(id_user), text=message_text, parse_mode='Markdown')
 
     else:
         errors = node["check"]["error"] + 1
-        print("CLOSE Port {0}:{1} user: {2} errors: {3}".format(addr, port, id_user, errors))
+        log.debug("CLOSE Port {0}:{1} user: {2} errors: {3}".format(addr, port, id_user, errors))
 
         # If errors >= downtime send user notification
         if errors >= downtime and not node["check"]["send_error"]:
@@ -80,7 +88,7 @@ for node in nodes:
                                                                                                         "%H:%M:%S"),
                                               addr, port)
 
-                print("Notification for user: {0} node down {1}:{2} last_ok: "
+                log.info("Notification for user: {0} node down {1}:{2} last_ok: "
                       "{3}".format(id_user, addr, port, node["check"]["last_ok"]))
 
                 bot.send_message(chat_id=int(id_user), text=message_text, parse_mode='Markdown')
@@ -90,7 +98,7 @@ for node in nodes:
                                                "check.send_error": True}})
 
             except Exception as e:
-                print(e)
+                log.error(e)
 
         else:
             nodes_col.update_one({"idUser": id_user, "address": node["address"]},

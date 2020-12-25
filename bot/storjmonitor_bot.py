@@ -5,7 +5,7 @@ import pymongo
 import telebot
 from comunes import *
 from keyboards import *
-
+from logrm import LogRM
 
 # Function user information
 def infouser(message, tp="message"):
@@ -36,9 +36,9 @@ def infouser(message, tp="message"):
     }
 
     if tp == "callback":
-        print("New callback -> id_user: {0}, username: {1}, callback: {2}".format(id_user, username, text))
+        log.debug("New callback -> id_user: {0}, username: {1}, callback: {2}".format(id_user, username, text))
     else:
-        print("New Message -> id_user: {0}, username: {1}, message: {2}".format(id_user, username, text))
+        log.debug("New Message -> id_user: {0}, username: {1}, message: {2}".format(id_user, username, text))
 
     updatelastaccess(id_user)
 
@@ -51,14 +51,14 @@ def checkuser(userdoc):
         userdoc_db = users_col.find_one({"_id": userdoc['_id']})
         if userdoc_db is None:
             users_col.insert_one(userdoc)
-            print("New user: {0}".format(userdoc))
+            log.info("New user: {0}".format(userdoc))
 
         else:
             return userdoc_db
 
     except Exception as a:
-        print("Failed to save new user to database {0}".format(userdoc))
-        print(a)
+        log.error("Failed to save new user to database {0}".format(userdoc))
+        log.error(a)
 
 
 # Update last access
@@ -66,8 +66,8 @@ def updatelastaccess(id_user):
     try:
         users_col.update_one({"_id": str(id_user)}, {"$set": {"lastAccess": datetime.utcnow()}})
     except Exception as b:
-        print("Failed to update last access for user {0}".format(id_user))
-        print(b)
+        log.error("Failed to update last access for user {0}".format(id_user))
+        log.error(b)
 
 
 print("------ Start Bot ------")
@@ -80,6 +80,11 @@ try:
     id_admin = int(os.environ["ID_ADMIN"])
 except KeyError:
     id_admin = 0
+
+# Log
+l = LogRM()
+l.init()
+log = l.logger
 
 # Bot telegram
 bot = telebot.TeleBot(telegram_token)
@@ -111,12 +116,12 @@ def command_start(message):
 @bot.message_handler(commands=['mynodes'])
 def message_myaddrs(message):
     infouser_db = checkuser(infouser(message))
-    print("Search nodes for user: {0}".format(infouser_db['_id']))
+    log.debug("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
-    print("Send keyboard myNodes to user: {0}".format(infouser_db['_id']))
+    log.debug("Send keyboard myNodes to user: {0}".format(infouser_db['_id']))
 
     if nodes.explain()['executionStats']['nReturned'] == 0:
-        print("Found 0 Nodes User: {0}".format(infouser_db['_id']))
+        log.debug("Found 0 Nodes User: {0}".format(infouser_db['_id']))
         bot.send_message(chat_id=infouser_db['_id'],
                          text=u"\u26A0 You have not added an Node yet.\nYou can use the /newnode command to add a new "
                               u"node.")
@@ -142,11 +147,11 @@ def message_newnode(message):
 @bot.message_handler(commands=['setname'])
 def message_setname(message):
     infouser_db = checkuser(infouser(message))
-    print("Search nodes for user: {0}".format(infouser_db['_id']))
+    log.debug("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
 
     if nodes.explain()['executionStats']['nReturned'] == 0:
-        print("Found 0 Address User: {0}".format(infouser_db['_id']))
+        log.debug("Found 0 Address User: {0}".format(infouser_db['_id']))
         bot.send_message(chat_id=infouser_db['_id'],
                          text=u"\u26A0 You have not added an Node yet.\nYou can use the /newnode command to add a new "
                               u"node.")
@@ -160,11 +165,11 @@ def message_setname(message):
 @bot.message_handler(commands=['setaddress'])
 def message_setaddr(message):
     infouser_db = checkuser(infouser(message))
-    print("Search nodes for user: {0}".format(infouser_db['_id']))
+    log.debug("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
 
     if nodes.explain()['executionStats']['nReturned'] == 0:
-        print("Found 0 Address User: {0}".format(infouser_db['_id']))
+        log.debug("Found 0 Address User: {0}".format(infouser_db['_id']))
         bot.send_message(chat_id=infouser_db['_id'],
                          text=u"\u26A0 You have not added an Node yet.\nYou can use the /newnode command to add a new "
                               u"node.")
@@ -178,11 +183,11 @@ def message_setaddr(message):
 @bot.message_handler(commands=['deletenode'])
 def message_deleteaddr(message):
     infouser_db = checkuser(infouser(message))
-    print("Search nodes for user: {0}".format(infouser_db['_id']))
+    log.debug("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
 
     if nodes.explain()['executionStats']['nReturned'] == 0:
-        print("Found 0 Address User: {0}".format(infouser_db['_id']))
+        log.debug("Found 0 Address User: {0}".format(infouser_db['_id']))
         bot.send_message(chat_id=infouser_db['_id'],
                          text=u"\u26A0 You have not added an Node yet.\nYou can use the /newnode command to add a new "
                               u"node.")
@@ -196,11 +201,11 @@ def message_deleteaddr(message):
 @bot.message_handler(commands=['enablenotification'])
 def message_enablenotification(message):
     infouser_db = checkuser(infouser(message))
-    print("Search nodes for user: {0}".format(infouser_db['_id']))
+    log.debug("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
 
     if nodes.explain()['executionStats']['nReturned'] == 0:
-        print("Found 0 Address User: {0}".format(infouser_db['_id']))
+        log.debug("Found 0 Address User: {0}".format(infouser_db['_id']))
         bot.send_message(chat_id=infouser_db['_id'],
                          text=u"\u26A0 You have not added an Node yet.\nYou can use the /newnode command to add a new "
                               u"node.")
@@ -215,11 +220,11 @@ def message_enablenotification(message):
 @bot.message_handler(commands=['disablenotification'])
 def message_disablenotification(message):
     infouser_db = checkuser(infouser(message))
-    print("Search nodes for user: {0}".format(infouser_db['_id']))
+    log.debug("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
 
     if nodes.explain()['executionStats']['nReturned'] == 0:
-        print("Found 0 Address User: {0}".format(infouser_db['_id']))
+        log.debug("Found 0 Address User: {0}".format(infouser_db['_id']))
         bot.send_message(chat_id=infouser_db['_id'],
                          text=u"\u26A0 You have not added an Node yet.\nYou can use the /newnode command to add a new "
                               u"node.")
@@ -233,11 +238,11 @@ def message_disablenotification(message):
 @bot.message_handler(commands=['seestats'])
 def message_seestats(message):
     infouser_db = checkuser(infouser(message))
-    print("Search nodes for user: {0}".format(infouser_db['_id']))
+    log.debug("Search nodes for user: {0}".format(infouser_db['_id']))
     nodes = nodes_col.find({"idUser": infouser_db['_id']})
 
     if nodes.explain()['executionStats']['nReturned'] == 0:
-        print("Found 0 Address User: {0}".format(infouser_db['_id']))
+        log.debug("Found 0 Address User: {0}".format(infouser_db['_id']))
         bot.send_message(chat_id=infouser_db['_id'],
                          text=u"\u26A0 You have not added an Node yet.\nYou can use the /newnode command to add a new "
                               u"node.")
@@ -274,7 +279,7 @@ def message_other(message):
             "$set": {"lastMessage.type": "newnodeaddr", "lastMessage.idMessage": str(response.message_id),
                      "lastMessage.text": message.text}})
 
-        print(
+        log.debug(
             "Save the name node on lastMessage -> idUser: {0}, nameNode: {1}".format(infouser_db['_id'], message.text))
 
     # Insert address for new node
@@ -290,7 +295,7 @@ def message_other(message):
 
         users_col.update_one({"_id": str(infouser_db['_id'])},
                              {"$set": {"lastMessage.type": "", "lastMessage.idMessage": "", "lastMessage.text": ""}})
-        print('Insert new node -> idUser: {0}, nameNode: {1}, address: {2}'.format(infouser_db['_id'],
+        log.info('Insert new node -> idUser: {0}, nameNode: {1}, address: {2}'.format(infouser_db['_id'],
                                                                                    infouser_db['lastMessage']['text'],
                                                                                    address_node))
 
@@ -308,7 +313,7 @@ def message_other(message):
         users_col.update_one({"_id": str(infouser_db['_id'])},
                              {"$set": {"lastMessage.type": "", "lastMessage.idMessage": "", "lastMessage.text": ""}})
 
-        print("Update name node. user: {0} node: {1} new_name: {2}".format(infouser_db['_id'],
+        log.info("Update name node. user: {0} node: {1} new_name: {2}".format(infouser_db['_id'],
                                                                            infouser_db['lastMessage']['text'],
                                                                            message.text))
 
@@ -328,7 +333,7 @@ def message_other(message):
         users_col.update_one({"_id": str(infouser_db['_id'])},
                              {"$set": {"lastMessage.type": "", "lastMessage.idMessage": "", "lastMessage.text": ""}})
 
-        print("Update address node. user: {0} node: {1} new_name: {2}".format(infouser_db['_id'],
+        log.info("Update address node. user: {0} node: {1} new_name: {2}".format(infouser_db['_id'],
                                                                               infouser_db['lastMessage']['text'],
                                                                               message.text))
 
@@ -353,14 +358,14 @@ def message_other(message):
 
             split_addr = infouser_db['lastMessage']['text'].split(":")
 
-            print("Update port check. user: {0} node: {1} new_port: {2}".format(infouser_db['_id'], split_addr[0],
+            log.info("Update port check. user: {0} node: {1} new_port: {2}".format(infouser_db['_id'], split_addr[0],
                                                                                 message.text))
 
             message_text = "The port has been changed. Now we will carry out the checks at:\n- Address: {0}\n- " \
                            "Port: {1}".format(split_addr[0], port)
 
         except Exception as d:
-            print(d)
+            log.error(d)
             message_text = "🔴 An error occurred while updating the information. Check that the port is only made up " \
                            "of numbers or try again later."
 
@@ -386,14 +391,14 @@ def message_other(message):
 
             split_addr = infouser_db['lastMessage']['text'].split(":")
 
-            print("Update downtime. user: {0} node: {1} downtime: {2}".format(infouser_db['_id'], split_addr[0],
+            log.info("Update downtime. user: {0} node: {1} downtime: {2}".format(infouser_db['_id'], split_addr[0],
                                                                               downtime))
 
             message_text = "The downtime has been changed. Now we will send the notification:\n- Address: {0}\n- " \
                            "Downtime: {1} minutes".format(split_addr[0], downtime)
 
         except Exception as d:
-            print(d)
+            log.error(d)
             message_text = "🔴 An error occurred while updating the information. Check that the downtime is only made " \
                            "up of numbers or try again later. If you send a 0 downtime, the default value of 3 " \
                            "minutes will be set."
@@ -414,11 +419,11 @@ def message_other(message):
 
         try:
             bot.send_message(id_admin, message_admin, parse_mode="Markdown")
-            print("Send message to ID: {0} Name: {1} Message: "
+            log.info("Send message to ID: {0} Name: {1} Message: "
                   "{2}".format(message.from_user.id, message.from_user.first_name, message.text))
 
         except Exception as f:
-            print(f)
+            log.error(f)
 
     else:
         bot.send_message(message.chat.id, main_message, parse_mode="Markdown")
@@ -435,7 +440,7 @@ def callback_query(call):
 
     # Send keyboard options node
     if re.search("^mynode-+", call.data):
-        print("Send keyboard options nodes to user: {0}".format(infouser_db['_id']))
+        log.debug("Send keyboard options nodes to user: {0}".format(infouser_db['_id']))
 
         node_code = str(call.data).replace('mynode-', '')
         doc = nodes_col.find_one({"address": node_code, "idUser": infouser_db['_id']})
@@ -457,16 +462,16 @@ def callback_query(call):
 
     # Return to keyboardNodes
     elif call.data == "myNodes":
-        print("Return to keyboardNodes, search nodes for user: {0}".format(infouser_db['_id']))
+        log.debug("Return to keyboardNodes, search nodes for user: {0}".format(infouser_db['_id']))
         nodes = nodes_col.find({"idUser": infouser_db['_id']})
 
         if nodes_col.count_documents({"idUser": infouser_db['_id']}) == 0:
-            print("Found 0 Nodes to user: {0}".format(infouser_db['_id']))
+            log.debug("Found 0 Nodes to user: {0}".format(infouser_db['_id']))
             bot.send_message(chat_id=infouser_db['_id'],
                              text=u"\u26A0 You have not added an Node yet.\nYou can use the /newnode command to add a "
                                   u"new node.")
         else:
-            print("Send keyboardNodes to user: {0}".format(infouser_db['_id']))
+            log.debug("Send keyboardNodes to user: {0}".format(infouser_db['_id']))
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                   text="Choose a Node from the list below:", parse_mode='Markdown')
             bot.edit_message_reply_markup(chat_id=infouser_db['_id'], message_id=call.message.message_id,
@@ -476,7 +481,7 @@ def callback_query(call):
     elif re.search("^editNode-+", call.data):
         node_code = str(call.data).replace('editNode-', '')
 
-        print("Send keyboardEditNode to user: {0}".format(infouser_db['_id']))
+        log.debug("Send keyboardEditNode to user: {0}".format(infouser_db['_id']))
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                               text="Select an option:", parse_mode='Markdown')
         bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
@@ -488,7 +493,7 @@ def callback_query(call):
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                               text="OK. Send me the new name for your node.", parse_mode='Markdown')
 
-        print("Update lastMessage.type -> setnodename user: {0} node: {1}".format(infouser_db['_id'], node_code))
+        log.debug("Update lastMessage.type -> setnodename user: {0} node: {1}".format(infouser_db['_id'], node_code))
         users_col.update_one({"_id": str(infouser_db['_id'])}, {
             "$set": {"lastMessage.type": "setnodename", "lastMessage.idMessage": str(call.message.message_id),
                      "lastMessage.text": node_code}})
@@ -499,7 +504,7 @@ def callback_query(call):
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                               text="OK. Send me the new address for your node.", parse_mode='Markdown')
 
-        print("Update lastMessage.type -> setnodeaddr user: {0} node: {1}".format(infouser_db['_id'], node_address))
+        log.debug("Update lastMessage.type -> setnodeaddr user: {0} node: {1}".format(infouser_db['_id'], node_address))
         users_col.update_one({"_id": str(infouser_db['_id'])}, {
             "$set": {"lastMessage.type": "setnodeaddr", "lastMessage.idMessage": str(call.message.message_id),
                      "lastMessage.text": node_address}})
@@ -519,7 +524,7 @@ def callback_query(call):
     # Callback confirmed delete address
     elif re.search("^yesDelNode-+", call.data):
         node_code = str(call.data).replace('yesDelNode-', '')
-        print("Delete node: {0} user: {1}".format(node_code, infouser_db['_id']))
+        log.info("Delete node: {0} user: {1}".format(node_code, infouser_db['_id']))
         nodes_col.delete_one({"address": node_code, "idUser": infouser_db['_id']})
 
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
@@ -542,7 +547,7 @@ def callback_query(call):
     elif re.search("^notON-+", call.data):
         node_code = str(call.data).replace('notON-', '')
         node_name = (nodes_col.find_one({"address": node_code, "idUser": infouser_db['_id']}))['name']
-        print("Activate notifications for: user -> {0} node ->{1}".format(infouser_db['_id'], node_code))
+        log.info("Activate notifications for: user -> {0} node ->{1}".format(infouser_db['_id'], node_code))
         nodes_col.update_one({"address": node_code, "idUser": infouser_db['_id']}, {"$set": {"notifications": True}})
 
         message_text = "Status notifications: ON 🟢\nNode: {0}".format(node_name)
@@ -555,7 +560,7 @@ def callback_query(call):
     elif re.search("^notOFF-+", call.data):
         node_code = str(call.data).replace('notOFF-', '')
         node_name = (nodes_col.find_one({"address": node_code, "idUser": infouser_db['_id']}))['name']
-        print("Desactivate notifications for: user -> {0} address ->{1}".format(infouser_db['_id'], node_code))
+        log.info("Desactivate notifications for: user -> {0} address ->{1}".format(infouser_db['_id'], node_code))
         nodes_col.update_one({"address": node_code, "idUser": infouser_db['_id']}, {"$set": {"notifications": False}})
 
         message_text = "Status notifications: OFF 🔴\nNode: {0}".format(node_name)
@@ -568,7 +573,7 @@ def callback_query(call):
     elif re.search("^stats-+", call.data):
         node_code = str(call.data).replace('stats-', '')
 
-        print("Get {0}/api/sno to user: {1}".format(node_code, infouser_db['_id']))
+        log.debug("Get {0}/api/sno to user: {1}".format(node_code, infouser_db['_id']))
         try:
             req = requestAPI("{0}/api/sno/".format(node_code))
             started_at = convertDate(req["startedAt"])
@@ -596,10 +601,10 @@ def callback_query(call):
                            "*Total Disk Space {3}*\n_Used:_ {4}\n_Free:_ {5}\n_Trash:_ " \
                            "{6}".format(str_uptime, str_last_pinged, color_status, convertSize(disk_available),
                                         convertSize(disk_used), convertSize(disk_free), convertSize(disk_trash))
-            print("Send information Node Info to user: {0}".format(infouser_db['_id']))
+            log.debug("Send information Node Info to user: {0}".format(infouser_db['_id']))
 
         except Exception as c:
-            print(c)
+            log.error(c)
             message_text = "*--- Node Info ---*\n\n🔴 An error occurred while getting the information, try again later" \
                            " or check your node."
 
@@ -612,14 +617,14 @@ def callback_query(call):
     elif re.search("^utilization-+", call.data):
         node_code = str(call.data).replace('utilization-', '')
 
-        print("Get {0}/api/sno/satellites to user: {1}".format(node_code, infouser_db['_id']))
+        log.debug("Get {0}/api/sno/satellites to user: {1}".format(node_code, infouser_db['_id']))
         try:
             req = requestAPI("{0}/api/sno/satellites".format(node_code))
             message_text = "*--- Utilization & Remaining ---*\n\n" + statsString(req)
-            print("Send Utilization & Remaining to user: {0}".format(infouser_db['_id']))
+            log.debug("Send Utilization & Remaining to user: {0}".format(infouser_db['_id']))
 
         except Exception as c:
-            print(c)
+            log.error(c)
             message_text = "*--- Utilization & Remaining ---*\n\n🔴 An error occurred while getting the information," \
                            " try again later or check your node."
 
@@ -632,10 +637,10 @@ def callback_query(call):
     elif re.search("^satellites-+", call.data):
         node_code = str(call.data).replace('satellites-', '')
 
-        print("Get {0}/api/sno/ to user: {1}".format(node_code, infouser_db['_id']))
+        log.debug("Get {0}/api/sno/ to user: {1}".format(node_code, infouser_db['_id']))
         try:
             req = requestAPI("{0}/api/sno/".format(node_code))
-            print("Send keyboardSatellites to user: {0}".format(infouser_db['_id']))
+            log.debug("Send keyboardSatellites to user: {0}".format(infouser_db['_id']))
 
             message_text = "Select a satellite to check its statistics"
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=message_text,
@@ -644,7 +649,7 @@ def callback_query(call):
                                           reply_markup=keyboardSatellites(node_code, req))
 
         except Exception as c:
-            print(c)
+            log.error(c)
 
     # Callback Uptime & Audits
     elif re.search("^uptimeaudits-+", call.data):
@@ -680,10 +685,10 @@ def callback_query(call):
                 message_text = message_text + "🛰️ *{0}*\n_Uptime Checks_: *{1}%*\n_Audit Checks_: *{2}%*\n" \
                                               "{3}\n".format(satellite_name, uptime_checks, audit_checks, warning)
 
-            print("Send info uptime and audit to user {0} node {1}".format(infouser_db['_id'], node_code))
+            log.debug("Send info uptime and audit to user {0} node {1}".format(infouser_db['_id'], node_code))
 
         except Exception as c:
-            print(c)
+            log.error(c)
             message_text = "*--- Other Info ---*\n\n🔴 An error occurred while getting the information, try again " \
                            "later or check your node. "
 
@@ -699,7 +704,7 @@ def callback_query(call):
         node_code = clean_split[0]
         n_stellite = clean_split[1]
 
-        print("Get satellite id {0}/api/sno/ to user: {1}".format(node_code, infouser_db['_id']))
+        log.debug("Get satellite id {0}/api/sno/ to user: {1}".format(node_code, infouser_db['_id']))
         try:
             # Get id for satellite
             req = requestAPI("{0}/api/sno/".format(node_code))
@@ -713,7 +718,7 @@ def callback_query(call):
                 warning = "\n\n⚠ {0}\n".format(req["satellites"][int(n_stellite)]["suspended"])
 
             # Get statistics satellite
-            print("Get info satellite {0}/api/sno/satellite/{1} to user: {2}".format(node_code, satellite_id,
+            log.debug("Get info satellite {0}/api/sno/satellite/{1} to user: {2}".format(node_code, satellite_id,
                                                                                      infouser_db['_id']))
             req2 = requestAPI("{0}/api/sno/satellite/{1}".format(node_code, satellite_id))
 
@@ -726,13 +731,13 @@ def callback_query(call):
             audit_success_count = req2["audit"]["successCount"]
             audit_checks = percentage(audit_success_count, audit_total_count)
 
-            print("Send info satellite {0} to user {1} node {2}".format(satellite_id, infouser_db['_id'], node_code))
+            log.debug("Send info satellite {0} to user {1} node {2}".format(satellite_id, infouser_db['_id'], node_code))
 
             message_text = "🛰️ *{0}*\n\n_Uptime Checks_: *{1}%*\n_Audit Checks_: *{2}%*\n\n{3}{4}".format(
                 req["satellites"][int(n_stellite)]["url"], uptime_checks, audit_checks, statsString(req2), warning)
 
         except Exception as c:
-            print(c)
+            log.error(c)
             message_text = "*--- Other Info ---*\n\n🔴 An error occurred while getting the information, try again " \
                            "later or check your node. "
 
@@ -745,7 +750,7 @@ def callback_query(call):
     elif re.search("^otherinf-+", call.data):
         node_code = str(call.data).replace('otherinf-', '')
 
-        print("Get {0}/api/sno/ to user: {1}".format(node_code, infouser_db['_id']))
+        log.debug("Get {0}/api/sno/ to user: {1}".format(node_code, infouser_db['_id']))
         try:
             req = requestAPI("{0}/api/sno/".format(node_code))
             uptodate = req["upToDate"]
@@ -761,10 +766,10 @@ def callback_query(call):
 
             message_text = "*--- Other Info ---*\n\n*Up to Date:* {0}\n*Version:* {1}\n\n*Wallet:* `{2}`\n\n" \
                            "*Node ID:* `{3}`".format(uptodate, version, wallet, nodeid)
-            print("Send Other Info to user: {0}".format(infouser_db['_id']))
+            log.debug("Send Other Info to user: {0}".format(infouser_db['_id']))
 
         except Exception as c:
-            print(c)
+            log.error(c)
             message_text = "*--- Other Info ---*\n\n🔴 An error occurred while getting the information, try again " \
                            "later or check your node. "
 
@@ -777,7 +782,7 @@ def callback_query(call):
     elif re.search("^payout-+", call.data):
         node_code = str(call.data).replace('payout-', '')
 
-        print("Get {0}/api/sno/satellites to user: {1}".format(node_code, infouser_db['_id']))
+        log.debug("Get {0}/api/sno/satellites to user: {1}".format(node_code, infouser_db['_id']))
         try:
             prices = {"download": 20, "repair_audit": 10, "disk": 1.5}
             req = requestAPI("{0}/api/sno/satellites".format(node_code))
@@ -815,10 +820,10 @@ def callback_query(call):
                               "\n\n".format(prices["disk"], disk_average, round(payout_disk_average, 2))
             m_text = m_text + "*TOTAL*\n• _Disk:_ {0}m\n• _Band Width:_ {1}\n• " \
                               "*Payout: ${2:.2f}*\n".format(total_disk, total_bw, total_payouts)
-            print("Send Payout Info to user: {0}".format(infouser_db['_id']))
+            log.debug("Send Payout Info to user: {0}".format(infouser_db['_id']))
 
         except Exception as c:
-            print(c)
+            log.error(c)
             m_text = "*--- Other Info ---*\n\n🔴 An error occurred while getting the information, try again " \
                      "later or check your node. "
 
@@ -858,15 +863,15 @@ def callback_query(call):
     # Callback cancel contact
     elif call.data == "cancelcontact":
         users_col.update_one({"_id": str(infouser_db['_id'])}, {"$set": {"contact": False}}, upsert=True)
-        print("User {0} cancel command contact".format(infouser_db['_id']))
+        log.info("User {0} cancel command contact".format(infouser_db['_id']))
         bot.send_message(infouser_db['_id'], main_message, parse_mode="Markdown")
 
     else:
-        print("Callback unrecognized for user {0}".format(call.message.chat.id))
+        log.info("Callback unrecognized for user {0}".format(call.message.chat.id))
 
 
 while True:
     try:
         bot.polling(none_stop=True, timeout=30)
     except Exception as e:
-        print(e)
+        log.error(e)
