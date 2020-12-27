@@ -51,10 +51,20 @@ def keyboardOptionsNode(node_code):
     markup.row_width = 2
     markup.add(
         InlineKeyboardButton("View Stats", callback_data="stats-" + node_code),
+        InlineKeyboardButton("Settings", callback_data="settings-" + node_code),
+        InlineKeyboardButton("« Return", callback_data="myNodes"))
+
+    return markup
+
+# Keyboard with options for address (edit, delete,...)
+def keyboardSettingsNode(node_code):
+    markup = InlineKeyboardMarkup()
+    markup.row_width = 3
+    markup.add(
         InlineKeyboardButton("Edit Node", callback_data="editNode-" + node_code),
         InlineKeyboardButton("Delete Node", callback_data="delNode-" + node_code),
         InlineKeyboardButton("Notifications", callback_data="notNode-" + node_code),
-        InlineKeyboardButton("« Return", callback_data="myNodes"))
+        InlineKeyboardButton("« Back to Nodes List", callback_data="myNodes"))
 
     return markup
 

@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2020-12-27
+### Added
+- Added if node down for 15 days the nofications are disabled
+
+### Changed
+- The Keyboard was modified with the node options.
+
 ## [1.5.0] - 2020-12-25
 ### Added
 - Added standard log format

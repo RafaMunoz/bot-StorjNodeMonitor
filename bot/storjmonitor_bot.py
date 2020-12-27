@@ -460,6 +460,18 @@ def callback_query(call):
         bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                       reply_markup=keyboardOptionsNode(node_code))
 
+    # Send keyboard options node
+    elif re.search("^settings-+", call.data):
+        log.debug("Send keyboard settings nodes to user: {0}".format(infouser_db['_id']))
+        node_code = str(call.data).replace('settings-', '')
+        message_text = "Choose an option to configure your node."
+
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=message_text,
+                              parse_mode='Markdown')
+        bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                      reply_markup=keyboardSettingsNode(node_code))
+
+
     # Return to keyboardNodes
     elif call.data == "myNodes":
         log.debug("Return to keyboardNodes, search nodes for user: {0}".format(infouser_db['_id']))

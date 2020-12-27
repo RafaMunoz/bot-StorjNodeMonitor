@@ -6,6 +6,7 @@ import pymongo
 import telebot
 from comunes import *
 from logrm import LogRM
+from datetime import datetime, timedelta
 
 print("------ Start Check Nodes ------")
 
@@ -52,9 +53,9 @@ for node in nodes:
         location = (addr, port)
         result_of_check = a_socket.connect_ex(location)
         a_socket.close()
+
     except Exception as f:
-        log.error(location)
-        log.error(f)
+        log.error("{0}:{1} - {2}".format(addr, port, f))
         continue
 
     # If the node returns to be active we send notification
@@ -103,3 +104,12 @@ for node in nodes:
         else:
             nodes_col.update_one({"idUser": id_user, "address": node["address"]},
                                  {"$set": {"check.last": datenow, "check.error": errors}})
+
+
+        # If node down for 15 days the nofications are disabled
+        inactive = (datetime.now() - node["check"]["last_ok"])/ timedelta(days=1)
+
+        if inactive > 15:
+            log.info("Inactive from {0} days. Disable check for {1} {2}".format(round(inactive, 2),id_user, addr))
+            nodes_col.update_one({"idUser": id_user, "address": node["address"]},
+                                 {"$set": {"notifications": False}})
