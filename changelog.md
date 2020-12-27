@@ -8,8 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.6.0] - 2020-12-27
 ### Added
-- Added if node down for 15 days the nofications are disabled
-
+- Added if node down for 15 days the notifications are disabled
+- Added in check_nodes if the user blocked the bot the notifications are disable
+    
 ### Changed
 - The Keyboard was modified with the node options.
 

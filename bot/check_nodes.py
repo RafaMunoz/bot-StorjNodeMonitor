@@ -4,6 +4,7 @@
 import socket
 import pymongo
 import telebot
+from telebot.apihelper import ApiTelegramException
 from comunes import *
 from logrm import LogRM
 from datetime import datetime, timedelta
@@ -97,6 +98,15 @@ for node in nodes:
                 nodes_col.update_one({"idUser": id_user, "address": node["address"]},
                                      {"$set": {"check.last": datenow, "check.error": errors,
                                                "check.send_error": True}})
+
+            except ApiTelegramException as te:
+                error_code = int(te.error_code)
+
+                # If user blocked the bot the notifications are disabled
+                if error_code == 403:
+                    log.error("Bot was blocked by the user {0}. Disable notifications.".format(id_user))
+                    nodes_col.update_one({"idUser": id_user, "address": node["address"]},
+                                         {"$set": {"notifications": False}})
 
             except Exception as e:
                 log.error(e)
