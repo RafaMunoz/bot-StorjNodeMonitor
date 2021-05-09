@@ -284,7 +284,7 @@ def message_other(message):
 
     # Insert address for new node
     elif infouser_db['lastMessage']['type'] == 'newnodeaddr':
-        
+
         address_node = cleanString(message.text)
 
         nodes_col.insert_one(
@@ -586,6 +586,8 @@ def callback_query(call):
         node_code = str(call.data).replace('stats-', '')
 
         log.debug("Get {0}/api/sno to user: {1}".format(node_code, infouser_db['_id']))
+        req = ""
+
         try:
             req = requestAPI("{0}/api/sno/".format(node_code))
             started_at = convertDate(req["startedAt"])
@@ -615,6 +617,10 @@ def callback_query(call):
                                         convertSize(disk_used), convertSize(disk_free), convertSize(disk_trash))
             log.debug("Send information Node Info to user: {0}".format(infouser_db['_id']))
 
+        except KeyError as e:
+            log.warning("Error {0}. {1}".format(e, json.dumps(req)))
+            message_text = "*--- Node Info ---*\n\n🟠 An error occurred while getting the information. If it is a new " \
+                           "node it is possible that there is not enough data yet, try again later."
         except Exception as c:
             log.error(c)
             message_text = "*--- Node Info ---*\n\n🔴 An error occurred while getting the information, try again later" \
@@ -671,31 +677,19 @@ def callback_query(call):
 
         try:
             # Get all satellites
-            req = requestAPI("{0}/api/sno/".format(node_code))
+            req = requestAPI("{0}/api/sno/satellites".format(node_code))
 
-            for satellite in req["satellites"]:
-                satellite_id = satellite["id"]
-                satellite_name = satellite["url"]
+            message_text = ""
 
-                if satellite["disqualified"] is not None:
-                    warning = "\n\n⚠ Satellite disqualified node.\n"
-                if satellite["suspended"] is not None:
-                    warning = "\n\n⚠ Satellite suspended node.\n"
+            for satellite in req["audits"]:
+                satellite_name = satellite["satelliteName"]
+                audit_score = round(satellite["auditScore"] * 100,2)
+                suspension_score = round(satellite["suspensionScore"] * 100,2)
+                online_score = round(satellite["onlineScore"] * 100,2)
 
-                # Get statistics satellite
-                req2 = requestAPI("{0}/api/sno/satellite/{1}".format(node_code, satellite_id))
-
-                # Get percentage
-                uptime_total_count = req2["uptime"]["totalCount"]
-                uptime_success_count = req2["uptime"]["successCount"]
-                uptime_checks = percentage(uptime_success_count, uptime_total_count)
-
-                audit_total_count = req2["audit"]["totalCount"]
-                audit_success_count = req2["audit"]["successCount"]
-                audit_checks = percentage(audit_success_count, audit_total_count)
-
-                message_text = message_text + "🛰️ *{0}*\n_Uptime Checks_: *{1}%*\n_Audit Checks_: *{2}%*\n" \
-                                              "{3}\n".format(satellite_name, uptime_checks, audit_checks, warning)
+                message_text = message_text + "🛰️ *{0}*\n_Suspension_: *{1}%*\n_Audit_: *{2}%*\n" \
+                                              "_Online_: *{3}*%\n\n".format(satellite_name, suspension_score, audit_score,
+                                                                          online_score)
 
             log.debug("Send info uptime and audit to user {0} node {1}".format(infouser_db['_id'], node_code))
 
@@ -735,18 +729,15 @@ def callback_query(call):
             req2 = requestAPI("{0}/api/sno/satellite/{1}".format(node_code, satellite_id))
 
             # Get percentage
-            uptime_total_count = req2["uptime"]["totalCount"]
-            uptime_success_count = req2["uptime"]["successCount"]
-            uptime_checks = percentage(uptime_success_count, uptime_total_count)
-
-            audit_total_count = req2["audit"]["totalCount"]
-            audit_success_count = req2["audit"]["successCount"]
-            audit_checks = percentage(audit_success_count, audit_total_count)
+            audit_score = req2["audits"]["auditScore"] * 100
+            suspension_score = req2["audits"]["auditScore"] * 100
+            online_score = req2["audits"]["auditScore"] * 100
 
             log.debug("Send info satellite {0} to user {1} node {2}".format(satellite_id, infouser_db['_id'], node_code))
 
-            message_text = "🛰️ *{0}*\n\n_Uptime Checks_: *{1}%*\n_Audit Checks_: *{2}%*\n\n{3}{4}".format(
-                req["satellites"][int(n_stellite)]["url"], uptime_checks, audit_checks, statsString(req2), warning)
+            message_text = "🛰️ *{0}*\n\n_Suspension_: *{1}%*\n_Audit_: *{2}%*\n_Online_: *{3}%*\n\n{4}{5}".format(
+                req["satellites"][int(n_stellite)]["url"], audit_score, suspension_score,online_score,
+                statsString(req2), warning)
 
         except Exception as c:
             log.error(c)
@@ -795,6 +786,7 @@ def callback_query(call):
         node_code = str(call.data).replace('payout-', '')
 
         log.debug("Get {0}/api/sno/satellites to user: {1}".format(node_code, infouser_db['_id']))
+        req = ""
         try:
             prices = {"download": 20, "repair_audit": 10, "disk": 1.5}
             req = requestAPI("{0}/api/sno/satellites".format(node_code))
@@ -835,7 +827,7 @@ def callback_query(call):
             log.debug("Send Payout Info to user: {0}".format(infouser_db['_id']))
 
         except Exception as c:
-            log.error(c)
+            log.error("{0}. {1}".format(c, json.dumps(req)))
             m_text = "*--- Other Info ---*\n\n🔴 An error occurred while getting the information, try again " \
                      "later or check your node. "
 
