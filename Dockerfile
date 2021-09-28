@@ -5,7 +5,8 @@ RUN set -eux \
   && pip install --no-cache-dir pymongo \
   && pip install --no-cache-dir urllib3 \
   && pip install --no-cache-dir pytelegrambotapi \
-  && pip install --no-cache-dir mqtthandler
+  && pip install --no-cache-dir mqtthandler \
+  && pip install --no-cache-dir dnspython
 
 RUN mkdir /opt/bot
 COPY bot /opt/bot
