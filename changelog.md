@@ -5,7 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.8.0] - 2021-11-23
+### Added
+- Added user storjnodemonitor
+
+## [1.7.0] - 2021-09-28
+### Changed
 - Modified the way to obtain audit score
+
+### Fixed
 - Fixed different KeyError
 - Fixed errors in check nodes when name not resolve
 

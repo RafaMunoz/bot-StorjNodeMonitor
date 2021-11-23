@@ -1,1 +1,1 @@
-rafa93m/bot-storjnodemonitor:v1.7.0
+rafa93m/bot-storjnodemonitor:v1.8.0
