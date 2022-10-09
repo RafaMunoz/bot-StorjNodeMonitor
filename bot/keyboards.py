@@ -4,36 +4,37 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 # Keyboard to list address
 def keyboardNodes(nodes, prefix, button_return=True):
     # We get number of nodes and if it's even or odd
-    i = nodes.count()
+    list_nodes = list(nodes)
+    i = len(list_nodes)
     modI = i % 2
 
     markup = InlineKeyboardMarkup()
     markup.row_width = 2
 
     if i == 1:
-        markup.add(InlineKeyboardButton(nodes[0]['name'], callback_data=prefix + nodes[0]['address']))
+        markup.add(InlineKeyboardButton(list_nodes[0]['name'], callback_data=prefix + list_nodes[0]['address']))
 
     else:
         # If it's odd
         if modI == 1:
             k = 0
             for j in range(int((i - 1) / 2)):
-                markup.add(InlineKeyboardButton(nodes[k]['name'], callback_data=prefix + nodes[k]['address']),
-                           InlineKeyboardButton(nodes[k + 1]['name'],
-                                                callback_data=prefix + nodes[k + 1]['address']))
+                markup.add(InlineKeyboardButton(list_nodes[k]['name'], callback_data=prefix + list_nodes[k]['address']),
+                           InlineKeyboardButton(list_nodes[k + 1]['name'],
+                                                callback_data=prefix + list_nodes[k + 1]['address']))
 
                 k = k + 2
 
             markup.add(
-                InlineKeyboardButton(nodes[k]['name'], callback_data=prefix + nodes[k]['address']))
+                InlineKeyboardButton(list_nodes[k]['name'], callback_data=prefix + list_nodes[k]['address']))
 
         # If it's even
         else:
             k = 0
             for j in range(int(i / 2)):
-                markup.add(InlineKeyboardButton(nodes[k]['name'], callback_data=prefix + nodes[k]['address']),
-                           InlineKeyboardButton(nodes[k + 1]['name'],
-                                                callback_data=prefix + nodes[k + 1]['address']))
+                markup.add(InlineKeyboardButton(list_nodes[k]['name'], callback_data=prefix + list_nodes[k]['address']),
+                           InlineKeyboardButton(list_nodes[k + 1]['name'],
+                                                callback_data=prefix + list_nodes[k + 1]['address']))
 
                 k = k + 2
 

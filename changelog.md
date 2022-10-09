@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.1] - 2022-10-09
+### Fixed
+- Fixed 
+
 ## [1.8.0] - 2021-11-23
 ### Added
 - Added user storjnodemonitor
