@@ -1,4 +1,4 @@
-FROM python:3.8-alpine
+FROM python:3.13.2-alpine
 MAINTAINER Rafa Muñoz rafa93m@gmail.com (@rafa93m)
 
 RUN set -eux \
